@@ -2,115 +2,158 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>個人電腦安全設定教學</title>
+<title>個人電腦安全設定｜Cyber Security SOP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    background: #0b1220;
-    color: #e5e7eb;
     margin: 0;
+    font-family: "Microsoft JhengHei", monospace;
+    background: radial-gradient(circle at top, #020617, #000);
+    color: #e5e7eb;
+}
+header {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(90deg, #020617, #020617);
+    border-bottom: 1px solid #0ea5e9;
+}
+header h1 {
+    color: #38bdf8;
+    margin: 0;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
     padding: 20px;
 }
-h1 {
-    color: #38bdf8;
+.card {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+.card h2 {
+    color: #22d3ee;
+    margin-top: 0;
+}
+.flow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
     text-align: center;
 }
-.section {
-    background: #111827;
-    border-left: 5px solid #38bdf8;
-    padding: 15px;
-    margin: 20px 0;
+.flow div {
+    background: #020617;
+    border: 1px solid #38bdf8;
     border-radius: 8px;
+    padding: 15px;
 }
-.section h2 {
-    margin-top: 0;
+.flow span {
+    font-size: 30px;
+}
+.checklist label {
+    display: block;
+    margin: 10px 0;
     cursor: pointer;
 }
-.section p {
-    line-height: 1.7;
+.quiz button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #0ea5e9;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
 }
-.tip {
+.result {
+    margin-top: 15px;
+    font-weight: bold;
     color: #22c55e;
-}
-.warn {
-    color: #f87171;
 }
 footer {
     text-align: center;
-    margin-top: 40px;
-    color: #9ca3af;
+    padding: 20px;
+    border-top: 1px solid #1e293b;
+    color: #94a3b8;
 }
 </style>
+
 <script>
-function toggle(el) {
-    const p = el.nextElementSibling;
-    p.style.display = p.style.display === "none" ? "block" : "none";
+function gradeQuiz() {
+    let score = 0;
+    if (document.querySelector('input[name="q1"]:checked')?.value === "b") score++;
+    if (document.querySelector('input[name="q2"]:checked')?.value === "a") score++;
+    if (document.querySelector('input[name="q3"]:checked')?.value === "c") score++;
+    document.getElementById("score").innerText =
+        "你的得分：" + score + " / 3";
 }
 </script>
 </head>
 
 <body>
 
-<h1>🔐 個人電腦安全設定流程教學</h1>
+<header>
+    <h1>🔐 個人電腦安全設定 SOP</h1>
+    <p>Cyber Security × CTF 教學網站</p>
+</header>
 
-<div class="section">
-    <h2 onclick="toggle(this)">① 作業系統更新</h2>
-    <p>
-        ✔ 確保 Windows / macOS 已啟用自動更新<br>
-        ✔ 修補已知漏洞，防止被駭客利用<br>
-        <span class="tip">建議：</span> 每月至少檢查一次更新
-    </p>
+<div class="container">
+
+<!-- SOP 流程圖 -->
+<div class="card">
+<h2>🧭 資安 SOP 流程圖</h2>
+<div class="flow">
+    <div><span>🛠️</span><br>系統更新</div>
+    <div><span>🔑</span><br>帳號密碼</div>
+    <div><span>🛡️</span><br>防毒防火牆</div>
+    <div><span>🌐</span><br>瀏覽器安全</div>
+    <div><span>💾</span><br>資料備份</div>
+    <div><span>🎣</span><br>社交工程防範</div>
+</div>
 </div>
 
-<div class="section">
-    <h2 onclick="toggle(this)">② 帳號與密碼安全</h2>
-    <p>
-        ✔ 密碼長度 ≥ 12 碼<br>
-        ✔ 包含大小寫、數字、符號<br>
-        ✔ 不同網站使用不同密碼<br>
-        <span class="warn">避免：</span> 使用生日、電話號碼
-    </p>
+<!-- 檢查清單 -->
+<div class="card">
+<h2>✅ 個人電腦安全檢查清單</h2>
+<div class="checklist">
+<label><input type="checkbox"> 作業系統已更新</label>
+<label><input type="checkbox"> 密碼長度 ≥ 12</label>
+<label><input type="checkbox"> 啟用防火牆</label>
+<label><input type="checkbox"> 已安裝防毒軟體</label>
+<label><input type="checkbox"> 瀏覽器 HTTPS 模式</label>
+<label><input type="checkbox"> 已完成資料備份</label>
+</div>
 </div>
 
-<div class="section">
-    <h2 onclick="toggle(this)">③ 防毒與防火牆</h2>
-    <p>
-        ✔ 啟用系統內建防毒軟體<br>
-        ✔ 防火牆保持開啟狀態<br>
-        ✔ 不隨意安裝來路不明軟體
-    </p>
+<!-- 測驗 -->
+<div class="card quiz">
+<h2>🧠 資安小測驗（CTF Style）</h2>
+
+<p>Q1. 下列何者是安全的密碼？</p>
+<label><input type="radio" name="q1" value="a"> 12345678</label><br>
+<label><input type="radio" name="q1" value="b"> A9#kL2@pQx!</label><br>
+<label><input type="radio" name="q1" value="c"> birthday2024</label>
+
+<p>Q2. 防火牆主要功能是？</p>
+<label><input type="radio" name="q2" value="a"> 過濾網路流量</label><br>
+<label><input type="radio" name="q2" value="b"> 清除病毒</label><br>
+<label><input type="radio" name="q2" value="c"> 加速網路</label>
+
+<p>Q3. 釣魚郵件最常利用？</p>
+<label><input type="radio" name="q3" value="a"> 防毒漏洞</label><br>
+<label><input type="radio" name="q3" value="b"> 系統更新</label><br>
+<label><input type="radio" name="q3" value="c"> 使用者心理</label>
+
+<button onclick="gradeQuiz()">送出測驗</button>
+<div id="score" class="result"></div>
 </div>
 
-<div class="section">
-    <h2 onclick="toggle(this)">④ 瀏覽器安全設定</h2>
-    <p>
-        ✔ 啟用 HTTPS Only 模式<br>
-        ✔ 安裝可信任的擴充功能<br>
-        ✔ 定期清除 Cookie 與快取
-    </p>
-</div>
-
-<div class="section">
-    <h2 onclick="toggle(this)">⑤ 資料備份</h2>
-    <p>
-        ✔ 重要資料至少備份兩份<br>
-        ✔ 使用外接硬碟或雲端<br>
-        <span class="tip">原則：</span> 3-2-1 備份法則
-    </p>
-</div>
-
-<div class="section">
-    <h2 onclick="toggle(this)">⑥ 日常安全習慣</h2>
-    <p>
-        ✔ 不點擊不明郵件連結<br>
-        ✔ 不隨意插入未知 USB<br>
-        ✔ 注意釣魚網站與假訊息
-    </p>
 </div>
 
 <footer>
-    © 個人電腦資安教學網頁｜Web Security Basic
+© Cyber Security Training | CTF Teaching Page
 </footer>
 
 </body>
