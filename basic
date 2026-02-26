@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>個人電腦安全設定教學</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #0b1220;
+    color: #e5e7eb;
+    margin: 0;
+    padding: 20px;
+}
+h1 {
+    color: #38bdf8;
+    text-align: center;
+}
+.section {
+    background: #111827;
+    border-left: 5px solid #38bdf8;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+.section h2 {
+    margin-top: 0;
+    cursor: pointer;
+}
+.section p {
+    line-height: 1.7;
+}
+.tip {
+    color: #22c55e;
+}
+.warn {
+    color: #f87171;
+}
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #9ca3af;
+}
+</style>
+<script>
+function toggle(el) {
+    const p = el.nextElementSibling;
+    p.style.display = p.style.display === "none" ? "block" : "none";
+}
+</script>
+</head>
+
+<body>
+
+<h1>🔐 個人電腦安全設定流程教學</h1>
+
+<div class="section">
+    <h2 onclick="toggle(this)">① 作業系統更新</h2>
+    <p>
+        ✔ 確保 Windows / macOS 已啟用自動更新<br>
+        ✔ 修補已知漏洞，防止被駭客利用<br>
+        <span class="tip">建議：</span> 每月至少檢查一次更新
+    </p>
+</div>
+
+<div class="section">
+    <h2 onclick="toggle(this)">② 帳號與密碼安全</h2>
+    <p>
+        ✔ 密碼長度 ≥ 12 碼<br>
+        ✔ 包含大小寫、數字、符號<br>
+        ✔ 不同網站使用不同密碼<br>
+        <span class="warn">避免：</span> 使用生日、電話號碼
+    </p>
+</div>
+
+<div class="section">
+    <h2 onclick="toggle(this)">③ 防毒與防火牆</h2>
+    <p>
+        ✔ 啟用系統內建防毒軟體<br>
+        ✔ 防火牆保持開啟狀態<br>
+        ✔ 不隨意安裝來路不明軟體
+    </p>
+</div>
+
+<div class="section">
+    <h2 onclick="toggle(this)">④ 瀏覽器安全設定</h2>
+    <p>
+        ✔ 啟用 HTTPS Only 模式<br>
+        ✔ 安裝可信任的擴充功能<br>
+        ✔ 定期清除 Cookie 與快取
+    </p>
+</div>
+
+<div class="section">
+    <h2 onclick="toggle(this)">⑤ 資料備份</h2>
+    <p>
+        ✔ 重要資料至少備份兩份<br>
+        ✔ 使用外接硬碟或雲端<br>
+        <span class="tip">原則：</span> 3-2-1 備份法則
+    </p>
+</div>
+
+<div class="section">
+    <h2 onclick="toggle(this)">⑥ 日常安全習慣</h2>
+    <p>
+        ✔ 不點擊不明郵件連結<br>
+        ✔ 不隨意插入未知 USB<br>
+        ✔ 注意釣魚網站與假訊息
+    </p>
+</div>
+
+<footer>
+    © 個人電腦資安教學網頁｜Web Security Basic
+</footer>
+
+</body>
+</html>
