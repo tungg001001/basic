@@ -2,243 +2,128 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>CTF 社交工程資安競賽平台</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>資安知識測驗（隨機+計時+解答）</title>
 <style>
-body {
-  margin:0;
-  font-family:"Microsoft JhengHei", monospace;
-  background:#020617;
-  color:#e5e7eb;
-}
-header {
-  text-align:center;
-  padding:25px;
-  border-bottom:1px solid #1e293b;
-}
-header h1 { color:#38bdf8; margin:0; }
-.container { max-width:900px; margin:auto; padding:20px; }
-.card {
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:10px;
-  padding:20px;
-  margin-bottom:25px;
-}
-button {
-  padding:8px 15px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-.red { background:#ef4444 }
-.green { background:#22c55e }
-.blue { background:#38bdf8 }
-input {
-  padding:6px;
-  border-radius:4px;
-  border:none;
-}
-#timer { font-size:22px; color:#f87171; }
-
-.mail-ui {
-  background:#0f172a;
-  border-radius:8px;
-  padding:15px;
-}
-.mail-header {
-  border-bottom:1px solid #334155;
-  margin-bottom:10px;
-}
-.mail-from { color:#38bdf8 }
-.mail-subject { font-size:18px; font-weight:bold }
-
-footer {
-  text-align:center;
-  padding:20px;
-  border-top:1px solid #1e293b;
-  color:#94a3b8;
-}
+  body { font-family:"Microsoft JhengHei", sans-serif; background:#f0f2f5; padding:20px; }
+  h1 { color:#007acc; }
+  .question { margin-bottom:20px; padding:15px; background:#fff; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+  .options label { display:block; margin:5px 0; cursor:pointer; }
+  #nextBtn, #submitBtn, #showAnswerBtn { padding:10px 20px; font-size:16px; cursor:pointer; border-radius:5px; border:none; margin-top:10px; }
+  #nextBtn { background:#28a745; color:#fff; }
+  #submitBtn { background:#007acc; color:#fff; }
+  #showAnswerBtn { background:#ffc107; color:#fff; }
+  #timer { font-size:18px; color:#dc3545; margin-bottom:10px; }
+  .correct { color:green; }
+  .wrong { color:red; }
 </style>
 </head>
-
 <body>
 
-<header>
-  <h1>🎣 CTF 社交工程資安競賽</h1>
-  <p>Phishing · QR · USB · LINE · Email</p>
-</header>
-
-<div class="container">
-
-<div class="card">
-玩家名稱：
-<input id="playerName" placeholder="請輸入姓名">
-<button class="blue" onclick="startGame()">開始挑戰</button>
-<div id="timer">⏳ 剩餘時間：15 秒</div>
-</div>
-
-<div id="mailBox" class="card" style="display:none"></div>
-
-<div class="card">
-<button class="red" onclick="choose('click')">📎 點擊 / 開啟</button>
-<button class="green" onclick="choose('report')">🚨 回報釣魚</button>
-<div id="gameResult" style="margin-top:10px;font-weight:bold"></div>
-<div id="flag" style="margin-top:10px;color:#facc15"></div>
-</div>
-
-<div class="card">
-<h3>🏆 排行榜（本機）</h3>
-<ol id="rank"></ol>
-</div>
-
-<div class="card">
-<h3>🔐 老師模式</h3>
-<input type="password" id="teacherPwd" placeholder="教師密碼">
-<button onclick="teacherMode()">解鎖解析</button>
-<button onclick="exportCSV()">📊 匯出 CSV</button>
-<div id="analysis" style="margin-top:10px;color:#38bdf8"></div>
-</div>
-
-</div>
-
-<footer>
-© Cyber Security CTF Training Platform
-</footer>
+<h1>基本資安知識測驗</h1>
+<div id="timer"></div>
+<form id="quizForm"></form>
+<button id="nextBtn">下一題</button>
+<button id="submitBtn" style="display:none;">提交測驗</button>
+<button id="showAnswerBtn">解答</button>
+<div id="result"></div>
 
 <script>
-const mails = [
-{
- real:false,
- from:"security@mybank-secure.com",
- subject:"⚠️ 帳戶異常，請立即驗證",
- body:"請於 30 分鐘內點擊連結，否則帳戶將被凍結。",
- analysis:"緊急語氣＋假網域＋要求點擊"
-},
-{
- real:true,
- from:"no-reply@google.com",
- subject:"新裝置登入通知",
- body:"我們偵測到新的登入活動，請前往帳戶查看。",
- analysis:"僅通知，未要求點擊連結"
-},
-{
- real:false,
- from:"event@school-verify.org",
- subject:"📢 校園活動報到 QR Code",
- body:"請掃描 QR Code 完成報到。",
- analysis:"QR Code 隱藏實際網址"
-},
-{
- real:false,
- from:"USB_DEVICE",
- subject:"📁 USB 裝置：成績名單.pdf",
- body:"插入 USB 後自動開啟 PDF。",
- analysis:"未知 USB + PDF 風險"
-},
-{
- real:false,
- from:"LINE 好友",
- subject:"你照片外流了",
- body:"是不是你？快點連結確認！",
- analysis:"情緒操控＋熟人假冒"
-}
+// 題庫（示範前10題，可自行擴充到50題）
+const questions = [
+  {q:"資安的三大核心原則是什麼？", type:"single", options:["機密性、完整性、可用性","保密性、可靠性、效率","安全性、速度、可維護性","加密性、隱私性、可靠性"], answer:0},
+  {q:"哪一種行為屬於社交工程攻擊？", type:"single", options:["SQL注入","魚叉式釣魚郵件","DDoS攻擊","防火牆設定錯誤"], answer:1},
+  {q:"防火牆可以阻擋所有惡意軟體的入侵。", type:"truefalse", answer:false},
+  {q:"以下哪一種屬於惡意軟體？", type:"single", options:["木馬","DNS","SSL","VPN"], answer:0},
+  {q:"哪一種攻擊會利用大量請求癱瘓服務？", type:"single", options:["Phishing","SQL Injection","DDoS","XSS"], answer:2},
+  {q:"強密碼應該包含大小寫字母、數字與特殊符號。", type:"truefalse", answer:true},
+  {q:"HTTPS 的作用是？", type:"single", options:["加快網頁速度","加密網頁傳輸內容","阻擋病毒","提高SEO排名"], answer:1},
+  {q:"兩步驟驗證（2FA）最常搭配哪種方式？", type:"single", options:["密碼與手機驗證碼","防火牆與反病毒軟體","VPN與SSH","Cookies與瀏覽器緩存"], answer:0},
+  {q:"VPN 可以保護你的 IP 位址與網路流量不被竊取。", type:"truefalse", answer:true},
+  {q:"什麼是零日漏洞（Zero-Day Vulnerability）？", type:"single", options:["已知漏洞並有補丁","未被發現或公開的漏洞","網路防火牆設定錯誤","使用者的弱密碼"], answer:1}
 ];
 
-let current, score=0, player="";
-let time=15, timerInt;
+// 設定隨機抽題數量
+const totalQuestions = 5; // 每次測驗抽5題
+let quizQuestions = [];
+function shuffleArray(arr){ return arr.sort(()=>Math.random()-0.5); }
+quizQuestions = shuffleArray([...questions]).slice(0,totalQuestions);
 
-function startGame() {
-  player=document.getElementById("playerName").value;
-  if(!player) return alert("請輸入姓名");
-  score=0;
-  document.getElementById("flag").innerText="";
-  nextMail();
-}
+let currentIndex = 0;
+let userAnswers = new Array(totalQuestions).fill(null);
+const timerDiv = document.getElementById("timer");
+let timeLeft = 30; // 每題30秒
+let timer;
 
-function startTimer(){
-  clearInterval(timerInt);
-  time=15;
-  document.getElementById("timer").innerText="⏳ 剩餘時間：15 秒";
-  timerInt=setInterval(()=>{
-    time--;
-    document.getElementById("timer").innerText="⏳ 剩餘時間："+time+" 秒";
-    if(time<=0){
-      clearInterval(timerInt);
-      score-=5;
-      document.getElementById("gameResult").innerText="⏰ 超時！-5 分";
-      nextMail();
-    }
+const quizForm = document.getElementById("quizForm");
+const nextBtn = document.getElementById("nextBtn");
+const submitBtn = document.getElementById("submitBtn");
+const showAnswerBtn = document.getElementById("showAnswerBtn");
+
+// 顯示題目
+function showQuestion(index){
+  clearInterval(timer);
+  timeLeft = 30;
+  timerDiv.textContent = `剩餘時間: ${timeLeft} 秒`;
+  timer = setInterval(()=>{
+    timeLeft--;
+    timerDiv.textContent = `剩餘時間: ${timeLeft} 秒`;
+    if(timeLeft<=0){ clearInterval(timer); nextQuestion(); }
   },1000);
-}
 
-function nextMail(){
-  current=mails[Math.floor(Math.random()*mails.length)];
-  document.getElementById("mailBox").style.display="block";
-  document.getElementById("mailBox").innerHTML=`
-  <div class="mail-ui">
-    <div class="mail-header">
-      <div class="mail-from">📧 ${current.from}</div>
-      <div class="mail-subject">${current.subject}</div>
-    </div>
-    <p>${current.body}</p>
-    ${current.subject.includes("QR")?"<p style='font-size:40px;text-align:center'>📱⬛⬜⬛⬜</p>":""}
-  </div>`;
-  startTimer();
-}
-
-function choose(action){
-  clearInterval(timerInt);
-  let correct = (!current.real && action==="report") || (current.real && action==="click");
-  if(correct){
-    score+=10;
-    document.getElementById("gameResult").innerText="✅ 正確 +10 分";
-  }else{
-    score-=5;
-    document.getElementById("gameResult").innerText="❌ 錯誤 -5 分";
+  const item = quizQuestions[index];
+  let html = `<div class="question"><p><strong>Q${index+1}.</strong> ${item.q}</p><div class="options">`;
+  if(item.type==="single"){
+    item.options.forEach((opt,i)=>{
+      html += `<label><input type="radio" name="q${index}" value="${i}" ${userAnswers[index]==i?"checked":""}> ${opt}</label>`;
+    });
+  } else if(item.type==="truefalse"){
+    html += `<label><input type="radio" name="q${index}" value="true" ${userAnswers[index]===true?"checked":""}> 正確</label>`;
+    html += `<label><input type="radio" name="q${index}" value="false" ${userAnswers[index]===false?"checked":""}> 錯誤</label>`;
   }
-  if(score>=30){
-    document.getElementById("flag").innerText="🏴 FLAG{PHISHING_DETECTED}";
-    saveScore();
-  }else{
-    nextMail();
+  html += "</div></div>";
+  quizForm.innerHTML = html;
+
+  nextBtn.style.display = index===totalQuestions-1?"none":"inline-block";
+  submitBtn.style.display = index===totalQuestions-1?"inline-block":"none";
+}
+
+// 下一題
+function nextQuestion(){
+  const selected = quizForm[`q${currentIndex}`].value;
+  if(quizQuestions[currentIndex].type==="truefalse") userAnswers[currentIndex] = selected==="true";
+  else userAnswers[currentIndex] = parseInt(selected);
+  if(currentIndex<totalQuestions-1){
+    currentIndex++;
+    showQuestion(currentIndex);
   }
 }
 
-function saveScore(){
-  let data=JSON.parse(localStorage.getItem("rank")||"[]");
-  data.push({name:player,score});
-  data.sort((a,b)=>b.score-a.score);
-  localStorage.setItem("rank",JSON.stringify(data));
-  showRank();
-}
+// 提交測驗
+submitBtn.addEventListener("click",()=>{
+  const selected = quizForm[`q${currentIndex}`].value;
+  if(quizQuestions[currentIndex].type==="truefalse") userAnswers[currentIndex] = selected==="true";
+  else userAnswers[currentIndex] = parseInt(selected);
 
-function showRank(){
-  let data=JSON.parse(localStorage.getItem("rank")||"[]");
-  document.getElementById("rank").innerHTML=data.map(d=>`<li>${d.name}：${d.score}</li>`).join("");
-}
+  clearInterval(timer);
+  let score=0;
+  let feedback="";
+  quizQuestions.forEach((item,i)=>{
+    if(userAnswers[i]===item.answer) score++;
+    let ansText = item.type==="truefalse"?(item.answer?"正確":"錯誤") : item.options[item.answer];
+    feedback += `<p>Q${i+1}: 正確答案: ${ansText}</p>`;
+  });
+  document.getElementById("result").innerHTML = `<h2>你的分數: ${score}/${totalQuestions}</h2>` + feedback;
+});
 
-function teacherMode(){
-  if(document.getElementById("teacherPwd").value!=="teacher123"){
-    alert("密碼錯誤"); return;
-  }
-  document.getElementById("analysis").innerText="解析："+current.analysis;
-}
+// 顯示解答
+showAnswerBtn.addEventListener("click",()=>{
+  let answerList="";
+  quizQuestions.forEach((item,i)=>{
+    let ansText = item.type==="truefalse"?(item.answer?"正確":"錯誤") : item.options[item.answer];
+    answerList += `<p>Q${i+1} 正確答案: ${ansText}</p>`;
+  });
+  document.getElementById("result").innerHTML = "<h2>解答</h2>" + answerList;
+});
 
-function exportCSV(){
-  let data=JSON.parse(localStorage.getItem("rank")||"[]");
-  let csv="Name,Score\n";
-  data.forEach(d=>csv+=`${d.name},${d.score}\n`);
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="ctf_score.csv";
-  a.click();
-}
-
-showRank();
-</script>
-
-</body>
-</html>
+showQuestion(currentIndex);
+nextBtn.addEventListener("click",nextQuestion);
