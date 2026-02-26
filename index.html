@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>CTF 社交工程資安競賽平台</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  margin:0;
+  font-family:"Microsoft JhengHei", monospace;
+  background:#020617;
+  color:#e5e7eb;
+}
+header {
+  text-align:center;
+  padding:25px;
+  border-bottom:1px solid #1e293b;
+}
+header h1 { color:#38bdf8; margin:0; }
+.container { max-width:900px; margin:auto; padding:20px; }
+.card {
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:25px;
+}
+button {
+  padding:8px 15px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+.red { background:#ef4444 }
+.green { background:#22c55e }
+.blue { background:#38bdf8 }
+input {
+  padding:6px;
+  border-radius:4px;
+  border:none;
+}
+#timer { font-size:22px; color:#f87171; }
+
+.mail-ui {
+  background:#0f172a;
+  border-radius:8px;
+  padding:15px;
+}
+.mail-header {
+  border-bottom:1px solid #334155;
+  margin-bottom:10px;
+}
+.mail-from { color:#38bdf8 }
+.mail-subject { font-size:18px; font-weight:bold }
+
+footer {
+  text-align:center;
+  padding:20px;
+  border-top:1px solid #1e293b;
+  color:#94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🎣 CTF 社交工程資安競賽</h1>
+  <p>Phishing · QR · USB · LINE · Email</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+玩家名稱：
+<input id="playerName" placeholder="請輸入姓名">
+<button class="blue" onclick="startGame()">開始挑戰</button>
+<div id="timer">⏳ 剩餘時間：15 秒</div>
+</div>
+
+<div id="mailBox" class="card" style="display:none"></div>
+
+<div class="card">
+<button class="red" onclick="choose('click')">📎 點擊 / 開啟</button>
+<button class="green" onclick="choose('report')">🚨 回報釣魚</button>
+<div id="gameResult" style="margin-top:10px;font-weight:bold"></div>
+<div id="flag" style="margin-top:10px;color:#facc15"></div>
+</div>
+
+<div class="card">
+<h3>🏆 排行榜（本機）</h3>
+<ol id="rank"></ol>
+</div>
+
+<div class="card">
+<h3>🔐 老師模式</h3>
+<input type="password" id="teacherPwd" placeholder="教師密碼">
+<button onclick="teacherMode()">解鎖解析</button>
+<button onclick="exportCSV()">📊 匯出 CSV</button>
+<div id="analysis" style="margin-top:10px;color:#38bdf8"></div>
+</div>
+
+</div>
+
+<footer>
+© Cyber Security CTF Training Platform
+</footer>
+
+<script>
+const mails = [
+{
+ real:false,
+ from:"security@mybank-secure.com",
+ subject:"⚠️ 帳戶異常，請立即驗證",
+ body:"請於 30 分鐘內點擊連結，否則帳戶將被凍結。",
+ analysis:"緊急語氣＋假網域＋要求點擊"
+},
+{
+ real:true,
+ from:"no-reply@google.com",
+ subject:"新裝置登入通知",
+ body:"我們偵測到新的登入活動，請前往帳戶查看。",
+ analysis:"僅通知，未要求點擊連結"
+},
+{
+ real:false,
+ from:"event@school-verify.org",
+ subject:"📢 校園活動報到 QR Code",
+ body:"請掃描 QR Code 完成報到。",
+ analysis:"QR Code 隱藏實際網址"
+},
+{
+ real:false,
+ from:"USB_DEVICE",
+ subject:"📁 USB 裝置：成績名單.pdf",
+ body:"插入 USB 後自動開啟 PDF。",
+ analysis:"未知 USB + PDF 風險"
+},
+{
+ real:false,
+ from:"LINE 好友",
+ subject:"你照片外流了",
+ body:"是不是你？快點連結確認！",
+ analysis:"情緒操控＋熟人假冒"
+}
+];
+
+let current, score=0, player="";
+let time=15, timerInt;
+
+function startGame() {
+  player=document.getElementById("playerName").value;
+  if(!player) return alert("請輸入姓名");
+  score=0;
+  document.getElementById("flag").innerText="";
+  nextMail();
+}
+
+function startTimer(){
+  clearInterval(timerInt);
+  time=15;
+  document.getElementById("timer").innerText="⏳ 剩餘時間：15 秒";
+  timerInt=setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText="⏳ 剩餘時間："+time+" 秒";
+    if(time<=0){
+      clearInterval(timerInt);
+      score-=5;
+      document.getElementById("gameResult").innerText="⏰ 超時！-5 分";
+      nextMail();
+    }
+  },1000);
+}
+
+function nextMail(){
+  current=mails[Math.floor(Math.random()*mails.length)];
+  document.getElementById("mailBox").style.display="block";
+  document.getElementById("mailBox").innerHTML=`
+  <div class="mail-ui">
+    <div class="mail-header">
+      <div class="mail-from">📧 ${current.from}</div>
+      <div class="mail-subject">${current.subject}</div>
+    </div>
+    <p>${current.body}</p>
+    ${current.subject.includes("QR")?"<p style='font-size:40px;text-align:center'>📱⬛⬜⬛⬜</p>":""}
+  </div>`;
+  startTimer();
+}
+
+function choose(action){
+  clearInterval(timerInt);
+  let correct = (!current.real && action==="report") || (current.real && action==="click");
+  if(correct){
+    score+=10;
+    document.getElementById("gameResult").innerText="✅ 正確 +10 分";
+  }else{
+    score-=5;
+    document.getElementById("gameResult").innerText="❌ 錯誤 -5 分";
+  }
+  if(score>=30){
+    document.getElementById("flag").innerText="🏴 FLAG{PHISHING_DETECTED}";
+    saveScore();
+  }else{
+    nextMail();
+  }
+}
+
+function saveScore(){
+  let data=JSON.parse(localStorage.getItem("rank")||"[]");
+  data.push({name:player,score});
+  data.sort((a,b)=>b.score-a.score);
+  localStorage.setItem("rank",JSON.stringify(data));
+  showRank();
+}
+
+function showRank(){
+  let data=JSON.parse(localStorage.getItem("rank")||"[]");
+  document.getElementById("rank").innerHTML=data.map(d=>`<li>${d.name}：${d.score}</li>`).join("");
+}
+
+function teacherMode(){
+  if(document.getElementById("teacherPwd").value!=="teacher123"){
+    alert("密碼錯誤"); return;
+  }
+  document.getElementById("analysis").innerText="解析："+current.analysis;
+}
+
+function exportCSV(){
+  let data=JSON.parse(localStorage.getItem("rank")||"[]");
+  let csv="Name,Score\n";
+  data.forEach(d=>csv+=`${d.name},${d.score}\n`);
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="ctf_score.csv";
+  a.click();
+}
+
+showRank();
+</script>
+
+</body>
+</html>
